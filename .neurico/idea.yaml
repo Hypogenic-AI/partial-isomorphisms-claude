@@ -1,0 +1,25 @@
+idea:
+  title: Unexpected Partial Isomorphisms
+  domain: theory
+  hypothesis: "Machine learning models may internally use counterintuitive or unexpected\
+    \ partial isomorphisms\u2014mappings between concepts that are not commonly used\
+    \ by humans\u2014because compressing two concepts together can help the model\
+    \ reason more efficiently.\n"
+  background:
+    description: 'People are always making little analogies, e.g., calling the sensors
+      on Waymo a ''hat'' for the car. Sometimes these analogies form mental models
+      that we use: many things are compared to the human body with a ''head'', ''hands'',
+      and a ''heart''. Can we find counterintuitive maps like this that aren''t in
+      current usage, but which models use because compressing two concepts together
+      helps the model reason?
+
+      '
+  metadata:
+    author: Ari Holtzman
+    source: IdeaHub
+    source_url: https://hypogenic.ai/ideahub/idea/1booKo7tMQixdJWYxdKV
+    idea_id: unexpected_partial_isomorphism_20260320_155807_064bad4d
+    created_at: '2026-03-20T15:58:07.267753'
+    status: submitted
+    github_repo_name: partial-isomorphisms-claude
+    github_repo_url: https://github.com/Hypogenic-AI/partial-isomorphisms-claude
