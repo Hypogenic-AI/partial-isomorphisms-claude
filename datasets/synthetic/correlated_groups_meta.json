@@ -1,0 +1,8 @@
+{
+  "n_samples": 500000,
+  "n_features": 100,
+  "n_groups": 10,
+  "within_group_corr": 0.8,
+  "sparsity": 0.99,
+  "description": "10 groups of 10 correlated features. Designed to probe whether inter-group partial isomorphisms emerge when groups share structural similarity."
+}

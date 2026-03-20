@@ -1,0 +1,7 @@
+{
+  "name": "quaternion",
+  "order": 8,
+  "n_triples": 64,
+  "table_file": "quaternion_table.npy",
+  "triples_file": "quaternion_triples.npy"
+}

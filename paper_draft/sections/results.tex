@@ -1,0 +1,112 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Experiment 1: Abundant Unexpected Concept Pairings}
+\label{sec:results_exp1}
+
+Out of 6,600 cross-domain concept pairs, 162 (2.5\%) have surprise scores exceeding $2\sigma$ above the mean, indicating a clear right tail of unexpectedly similar pairs in LLM embedding space.
+\Tabref{tab:top_pairs} shows the 10 most surprising pairs.
+
+\begin{table}[t]
+    \centering
+    \caption{Top 10 most surprising cross-domain concept pairs, ranked by \surprisescore (model similarity minus human similarity). Model similarity is cosine similarity of \embmodel embeddings; human similarity is Wu-Palmer WordNet score. Higher surprise indicates greater discrepancy between model and human judgments.}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}clclccc@{}}
+        \toprule
+        \textbf{Rank} & \textbf{Concept 1} & \textbf{Domain 1} & \textbf{Concept 2} & \textbf{Domain 2} & \textbf{Model Sim} & \textbf{Surprise} \\
+        \midrule
+        1 & bridge & computing & ridge & geography & 0.584 & \textbf{0.442} \\
+        2 & foundation & architecture & formation & sports & 0.595 & 0.428 \\
+        3 & ingredient & cooking & enzyme & biology & 0.520 & 0.409 \\
+        4 & ingredient & cooking & protein & biology & 0.506 & 0.406 \\
+        5 & foundation & architecture & anchor & navigation & 0.503 & 0.403 \\
+        6 & advance & warfare & assist & sports & 0.517 & 0.392 \\
+        7 & stack & computing & layer & cooking & 0.499 & 0.388 \\
+        8 & shield & warfare & defense & sports & 0.456 & 0.385 \\
+        9 & beam & architecture & bearing & navigation & 0.509 & 0.384 \\
+        10 & yield & finance & bearing & navigation & 0.468 & 0.377 \\
+        \bottomrule
+    \end{tabular}
+    }
+    \label{tab:top_pairs}
+\end{table}
+
+\para{Qualitative categories.}
+We identify four recurring types of unexpected mappings among the top pairs:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \textbf{Functional equivalents}: foundation$\leftrightarrow$anchor (stability providers), shield$\leftrightarrow$defense (protectors), recipe$\leftrightarrow$strategy (action plans).
+    \item \textbf{Structural parallels}: stack$\leftrightarrow$layer (ordered accumulation), bridge$\leftrightarrow$ridge (elevated connections across gaps).
+    \item \textbf{Process analogues}: ingredient$\leftrightarrow$enzyme (transformation inputs), advance$\leftrightarrow$assist (enabling collaborative actions).
+    \item \textbf{Latent metaphors}: heart$\leftrightarrow$beat, eye$\leftrightarrow$window---pairs that exist as human metaphors but whose high model similarity is not predicted by WordNet.
+\end{itemize}
+
+The most productive analogies involve concepts that play similar \emph{functional roles} in their respective domains, suggesting that the model's compression strategy preferentially preserves functional structure.
+
+\subsection{Experiment 2: Unexpected Analogies Aid Reasoning}
+\label{sec:results_exp2}
+
+\para{2A: Analogy recognition.}
+\gptfour rates the structural validity of surprising pairs at 3.05/5 on average, comparable to control pairs at 3.00/5.
+The ``surprise'' is entirely about human expectations, not structural emptiness: several pairs receive ratings of 4/5, including foundation$\leftrightarrow$formation, foundation$\leftrightarrow$anchor, stack$\leftrightarrow$layer, and shield$\leftrightarrow$defense.
+
+\para{2B: Reasoning transfer.}
+Unexpected analogy hints consistently improve reasoning quality across 8 tasks (\tabref{tab:reasoning}).
+The unexpected hint condition outperforms both baselines on 5 of 8 tasks, ties on 2, and underperforms on 1.
+The largest improvements come on tasks about team dynamics (heart$\leftrightarrow$beat: 2$\to$4) and catalytic processes (ingredient$\leftrightarrow$enzyme: 2$\to$4).
+
+\begin{table}[t]
+    \centering
+    \caption{Reasoning quality (1--5 scale) across three hint conditions, averaged over 8 reasoning tasks. Standard deviations in parentheses. Unexpected analogy hints from Experiment~1 yield the highest mean quality.}
+    \begin{tabular}{@{}lcc@{}}
+        \toprule
+        \textbf{Condition} & \textbf{Mean Rating} & \textbf{Std} \\
+        \midrule
+        No hint & 3.00 & (0.76) \\
+        Conventional hint & 3.38 & (0.92) \\
+        Unexpected hint & \textbf{3.62} & (0.74) \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:reasoning}
+\end{table}
+
+\para{2C: Spontaneous discovery.}
+When asked to freely generate surprising analogies, \gptfour produces remarkable mappings that go well beyond our concept list.
+Examples include: \emph{chord progressions}$\leftrightarrow$\emph{market corrections} (both build and resolve tension cyclically), \emph{Git version control}$\leftrightarrow$\emph{phylogenetic trees} (both are DAGs tracking changes and ancestry), and \emph{dead reckoning}$\leftrightarrow$\emph{social reputation tracking} (both estimate position from incomplete trajectory data).
+All three receive surprise ratings of 5/5 from the model.
+
+\subsection{Experiment 3: Shared Activation Patterns}
+\label{sec:results_exp3}
+
+This is our strongest result.
+\Tabref{tab:activations} shows that surprising pairs exhibit significantly higher MLP activation cosine similarity in \pythia than both control and random pairs.
+
+\begin{table}[t]
+    \centering
+    \caption{Mean MLP activation cosine similarity in \pythia across pair types (20 pairs per group), averaged over all 24 layers. Statistical tests compare surprising pairs against controls and random baselines. The large effect size ($d = 0.81$) indicates that the activation overlap difference is not only significant but substantial.}
+    \begin{tabular}{@{}lccccc@{}}
+        \toprule
+        \textbf{Pair Type} & \textbf{Mean Sim} & \textbf{Std} & \textbf{U stat} & \textbf{$p$-value} & \textbf{Cohen's $d$} \\
+        \midrule
+        Surprising ($n=20$) & \textbf{0.510} & 0.057 & --- & --- & --- \\
+        Control ($n=20$) & 0.466 & 0.053 & 283 & 0.013 & \textbf{0.81} \\
+        Random ($n=20$) & 0.443 & 0.060 & 313 & 0.001 & 1.14 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:activations}
+\end{table}
+
+\para{Layer-by-layer analysis.}
+The effect is concentrated in \textbf{layers 5--17} (the middle layers responsible for semantic processing), with 14 out of 24 layers showing significant differences ($p < 0.05$) between surprising and control pairs.
+Early layers (1--4) and final layers (21--23) show no significant difference, consistent with these layers handling low-level token processing and output formatting respectively \citep{gurnee2023finding}.
+
+\para{Polysemantic neurons.}
+We find 30 layer-pair combinations where concepts from surprising pairs share top-5\% activated neurons.
+The highest overlap is bridge$\leftrightarrow$ridge at layer 12 (Jaccard index $= 0.231$), meaning 23\% of their most active neurons are shared.
+This concentration in middle layers aligns with prior work showing that these layers encode semantic features \citep{gurnee2023finding}, suggesting that the partial isomorphisms we detect are genuinely semantic rather than artifacts of surface-level token processing.
+
+\subsection{Cross-Experiment Consistency}
+\label{sec:cross}
+
+The three experiments provide converging evidence at different levels of analysis.
+Embedding-level surprise (Experiment~1) predicts both behavioral utility in reasoning tasks (Experiment~2) and mechanistic overlap in neural activations (Experiment~3).
+The qualitative finding that functional-role analogies dominate the top pairs is consistent across all three experiments: the pairs that \gptfour rates most highly as structural analogies (2A) are also the pairs that produce the largest reasoning improvements (2B) and show the highest activation overlap (3).

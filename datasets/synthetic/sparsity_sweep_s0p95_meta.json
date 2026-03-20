@@ -1,0 +1,6 @@
+{
+  "preset": "sparsity_sweep",
+  "sparsity": 0.95,
+  "n_samples": 200000,
+  "n_features": 40
+}

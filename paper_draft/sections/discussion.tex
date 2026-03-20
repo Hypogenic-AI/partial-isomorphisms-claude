@@ -1,0 +1,61 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Interpretation}
+
+Our results show that LLMs create a rich landscape of unexpected partial isomorphisms between concepts from different domains.
+These mappings are not random: they preferentially preserve functional roles and structural relationships, they concentrate in semantic processing layers, and they can serve as productive reasoning aids.
+
+{\bf Why do models compress these particular concepts together?}
+The most common pattern among surprising pairs involves concepts that play analogous \emph{functional roles} in their respective domains: foundation and anchor both provide stability, ingredient and enzyme both serve as transformation inputs, shield and defense both protect.
+This suggests that the model's compression strategy is guided by functional abstraction: concepts that serve similar purposes get mapped to overlapping regions of representation space, regardless of whether humans group them together.
+This is consistent with the Platonic Representation Hypothesis \citep{huh2024platonic}, which predicts that models converge toward representations that reflect the statistical structure of reality---and functional roles are indeed a deep structural property shared across domains.
+
+{\bf Are these genuinely novel analogies?}
+Some of our ``surprising'' pairs (\eg heart$\leftrightarrow$beat, eye$\leftrightarrow$window) are well-known human metaphors.
+Their high surprise scores reflect limitations of our human similarity baseline (WordNet) rather than true novelty.
+However, many top pairs (\eg ingredient$\leftrightarrow$enzyme, beam$\leftrightarrow$bearing, yield$\leftrightarrow$bearing) are not standard human metaphors.
+The spontaneously generated analogies in Experiment~2C---such as \emph{chord progressions}$\leftrightarrow$\emph{market corrections} and \emph{Git}$\leftrightarrow$\emph{phylogenetic trees}---are genuinely creative and not commonly found in human discourse.
+
+\subsection{Limitations}
+
+\para{Human similarity baseline.}
+WordNet path similarity is an imperfect proxy for human conceptual similarity.
+It assigns low scores to pairs that humans might find related (\eg heart$\leftrightarrow$beat receives 0.111), inflating surprise scores for some pairs.
+A more robust baseline using crowd-sourced similarity judgments or ConceptNet would strengthen the surprise metric.
+
+\para{Sample size in Experiment 2B.}
+The reasoning transfer experiment tests only 8 tasks.
+While the results are consistent (unexpected hints outperform on 5 of 8 tasks), statistical power is limited.
+Larger-scale evaluation with diverse reasoning benchmarks would provide stronger evidence.
+
+\para{Self-evaluation bias.}
+Using \gptfour to both generate and rate reasoning responses introduces potential bias.
+The model may systematically prefer its own outputs in certain conditions.
+Human evaluation or evaluation by an independent model would address this concern.
+
+\para{Model-specific findings.}
+Our results span three different models (\embmodel for embeddings, \gptfour for reasoning, \pythia for activations).
+While the consistency across models strengthens the finding, each experiment is model-specific and may not generalize to all architectures.
+The embedding results may not transfer to models with different training data or objectives.
+
+\para{Causal direction.}
+We demonstrate correlation between embedding surprise and activation overlap, but we do not establish that models \emph{use} shared representations for reasoning.
+The shared activations could be artifacts of training data co-occurrence rather than functional compression.
+Causal intervention experiments (\eg activation patching) would be needed to verify functional importance.
+
+\subsection{Broader Implications}
+
+\para{For interpretability.}
+The partial isomorphisms we detect could serve as a lens for understanding how models organize knowledge.
+The layer-specific concentration of effects (layers 5--17 in \pythia) identifies a specific locus for studying cross-domain abstraction.
+Future work using sparse autoencoders \citep{bricken2023monosemanticity} could decompose polysemantic neurons to identify the specific features shared between surprising pairs.
+
+\para{For human reasoning.}
+The model-discovered analogies represent genuinely novel metaphors that could enrich human understanding.
+Analogies like ingredient$\leftrightarrow$enzyme (both catalyze transformations in a recipe/reaction) or chord progressions$\leftrightarrow$market corrections (both build and release tension cyclically) could serve as pedagogical tools or creative prompts.
+
+\para{For AI alignment.}
+Understanding what concepts models ``see as similar'' reveals potential failure modes.
+If a model treats shield and defense as near-synonyms, it might inappropriately transfer military reasoning to sports contexts or vice versa.
+Mapping these unexpected similarities could help identify where models might make surprising generalizations.

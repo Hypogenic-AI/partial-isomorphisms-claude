@@ -1,0 +1,7 @@
+{
+  "name": "klein4",
+  "order": 4,
+  "n_triples": 16,
+  "table_file": "klein4_table.npy",
+  "triples_file": "klein4_triples.npy"
+}

@@ -1,0 +1,12 @@
+{
+  "source": "synthetic_random",
+  "n_games": 5000,
+  "max_seq_len": 60,
+  "mean_seq_len": 59.9588,
+  "encoding": "integers 0-63, row-major 8x8, -1=padding",
+  "board_values": {
+    "empty": 0,
+    "black": 1,
+    "white": -1
+  }
+}

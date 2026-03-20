@@ -1,0 +1,8 @@
+Large language models, trained through massive text compression, may discover structural analogies between concept domains that differ from those humans naturally use.
+We investigate whether LLMs internally create and leverage such \emph{unexpected partial isomorphisms}---structure-preserving mappings between concepts that are distant in human similarity judgments but close in model representation space.
+We conduct three complementary experiments.
+First, we compare pairwise concept similarities from LLM embeddings against WordNet-derived human similarity scores across 6,600 cross-domain concept pairs, identifying 162 significantly surprising pairs (exceeding $2\sigma$ above the mean surprise score).
+Second, we test whether these unexpected analogies improve reasoning: when provided as hints to \gptfour, they yield higher-quality insights (3.62/5) than conventional analogies (3.38/5) or no hints (3.00/5).
+Third, we analyze MLP activations in \pythia and find that surprising concept pairs share significantly more activation overlap than matched controls (Cohen's $d = 0.81$, $p = 0.013$), with the effect concentrated in semantic processing layers 5--17.
+Our results show that LLMs have discovered a rich space of ``alien analogies''---functional and structural parallels like \emph{ingredient}$\leftrightarrow$\emph{enzyme} and \emph{foundation}$\leftrightarrow$\emph{anchor}---that humans do not commonly use but that reflect genuine shared structure.
+These findings suggest that neural compression creates emergent conceptual organization that could yield novel metaphors for human reasoning.

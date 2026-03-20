@@ -1,0 +1,35 @@
+# Large generated data files
+*.npy
+*.npz
+*.pt
+*.bin
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.parquet
+*.arrow
+*.csv
+*.tsv
+*.jsonl
+
+# Except small example / fixture files
+!**/examples/*.npy
+!**/fixtures/*.csv
+
+# Downloaded model weights
+*.safetensors
+*.ckpt
+
+# HuggingFace cache
+.cache/
+huggingface/
+
+# Large directories
+othello/data/
+probing/corpora/
+benchmarks/raw/
+
+# Logs from generation runs
+*.log
+generation_log*.txt

@@ -1,0 +1,10 @@
+{
+  "n_samples": 500000,
+  "n_features": 80,
+  "hidden_dims": [
+    20
+  ],
+  "sparsity": 0.99,
+  "importance_decay": 0.9,
+  "description": "80 features compressed into 20 dims. Useful for studying which features survive compression."
+}

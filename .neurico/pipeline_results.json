@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "stages": {
+    "resource_finder": {
+      "success": true,
+      "completion_marker": "/workspaces/partial-isomorphisms-claude/.resource_finder_complete",
+      "outputs": {
+        "literature_review": "/workspaces/partial-isomorphisms-claude/literature_review.md",
+        "resources_catalog": "/workspaces/partial-isomorphisms-claude/resources.md",
+        "papers_dir": "/workspaces/partial-isomorphisms-claude/papers",
+        "datasets_dir": "/workspaces/partial-isomorphisms-claude/datasets",
+        "code_dir": "/workspaces/partial-isomorphisms-claude/code"
+      },
+      "log_file": "/workspaces/partial-isomorphisms-claude/logs/resource_finder_claude.log",
+      "transcript_file": "/workspaces/partial-isomorphisms-claude/logs/resource_finder_claude_transcript.jsonl",
+      "elapsed_time": 3124.534008026123
+    },
+    "experiment_runner": {
+      "success": true,
+      "return_code": 0,
+      "elapsed_time": 1424.6887276172638,
+      "log_file": "/workspaces/partial-isomorphisms-claude/logs/execution_claude.log",
+      "transcript_file": "/workspaces/partial-isomorphisms-claude/logs/execution_claude_transcript.jsonl"
+    }
+  },
+  "work_dir": "/workspaces/partial-isomorphisms-claude"
+}

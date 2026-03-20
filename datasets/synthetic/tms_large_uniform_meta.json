@@ -1,0 +1,9 @@
+{
+  "n_samples": 1000000,
+  "n_features": 256,
+  "hidden_dims": [
+    64
+  ],
+  "sparsity": 0.995,
+  "description": "256 uniform-importance features -> 64 dims. Tests whether compression is qualitatively different without a pre-ordained feature hierarchy."
+}

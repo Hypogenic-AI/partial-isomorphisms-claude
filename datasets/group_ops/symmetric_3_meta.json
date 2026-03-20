@@ -1,0 +1,7 @@
+{
+  "name": "symmetric_3",
+  "order": 6,
+  "n_triples": 36,
+  "table_file": "symmetric_3_table.npy",
+  "triples_file": "symmetric_3_triples.npy"
+}

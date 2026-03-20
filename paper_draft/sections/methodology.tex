@@ -1,0 +1,79 @@
+\section{Methodology}
+\label{sec:method}
+
+We conduct three experiments that progressively move from broad discovery to mechanistic evidence.
+Experiment~1 identifies unexpected concept pairings at the embedding level, Experiment~2 tests whether these pairings are functionally useful for reasoning, and Experiment~3 examines whether they correspond to shared activation patterns at the neuron level.
+
+\subsection{Concept Dataset}
+\label{sec:dataset}
+
+We construct a dataset of 120 concepts organized across 12 semantic domains: \emph{body}, \emph{architecture}, \emph{computing}, \emph{cooking}, \emph{music}, \emph{warfare}, \emph{biology}, \emph{geography}, \emph{finance}, \emph{sports}, \emph{social}, and \emph{navigation} (10 concepts per domain).
+Concepts are chosen to be core vocabulary items within their domain (\eg ``foundation'' for architecture, ``enzyme'' for biology).
+This yields $\binom{120}{2} = 7{,}140$ total pairwise comparisons, of which 6,600 are cross-domain and 540 are within-domain.
+
+\subsection{Experiment 1: Embedding Surprise Discovery}
+\label{sec:exp1}
+
+\para{Similarity measures.}
+We compute two similarity scores for each concept pair $(c_i, c_j)$:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \textbf{Model similarity} $s_\text{model}(c_i, c_j)$: cosine similarity of \embmodel embeddings (3,072 dimensions).
+    \item \textbf{Human similarity} $s_\text{human}(c_i, c_j)$: Wu-Palmer similarity \citep{wu1994verb} computed via WordNet path distance \citep{miller1995wordnet}.
+\end{itemize}
+
+\para{Surprise score.}
+We define the \surprisescore for a cross-domain pair as:
+\begin{equation}
+    \text{surprise}(c_i, c_j) = s_\text{model}(c_i, c_j) - s_\text{human}(c_i, c_j)
+    \label{eq:surprise}
+\end{equation}
+A pair is considered significantly surprising if its score exceeds $\mu + 2\sigma$, where $\mu$ and $\sigma$ are computed over all cross-domain pairs.
+This threshold identifies pairs where the model considers concepts much more similar than WordNet would predict.
+
+\subsection{Experiment 2: LLM Analogical Reasoning Probing}
+\label{sec:exp2}
+
+We use \gptfour to test three aspects of unexpected analogies.
+
+\para{2A: Analogy recognition.}
+For each of the top 20 surprising pairs, we prompt \gptfour to identify structural parallels between the two concepts and rate the strength of the analogy on a 1--5 scale.
+We compare ratings against 20 control pairs (cross-domain pairs with near-zero surprise scores).
+Temperature is set to 0.3 for generation.
+
+\para{2B: Reasoning transfer.}
+We construct 8 reasoning tasks where cross-domain transfer could be helpful (\eg ``What makes a good team catalyst?'').
+For each task, we test three conditions: (a) no analogy hint, (b) a conventional analogy hint, and (c) an unexpected analogy hint drawn from Experiment~1.
+\gptfour rates the quality of its own responses on a 1--5 scale (temperature 0 for rating).
+
+\para{2C: Spontaneous discovery.}
+We prompt \gptfour to freely generate its most surprising cross-domain analogies without access to our concept list, then rate each for surprise and structural validity.
+
+\subsection{Experiment 3: Activation-Level Analysis}
+\label{sec:exp3}
+
+\para{Model and setup.}
+We use TransformerLens \citep{nanda2023transformerlens} to extract MLP activations from \pythia \citep{biderman2023pythia} (24 layers, 1024 dimensions).
+For each of the 120 concepts, we construct 5 domain-specific sentence contexts (\eg ``The \emph{enzyme} catalyzes the chemical reaction'') to control for polysemy.
+
+\para{Activation similarity.}
+For each concept, we extract MLP activations at the position of the concept token, averaged across the 5 contexts.
+We compute cosine similarity between activation vectors for three groups of 20 pairs each:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \textbf{Surprising pairs}: top 20 from Experiment~1.
+    \item \textbf{Control pairs}: matched for cross-domain status but with near-zero surprise scores.
+    \item \textbf{Random pairs}: randomly sampled cross-domain pairs.
+\end{itemize}
+
+\para{Layer analysis.}
+We repeat the similarity comparison at each of the 24 layers independently to identify where in the network the effect is concentrated.
+
+\para{Polysemantic neuron identification.}
+For each surprising pair, we identify neurons in the top 5\% of activations for both concepts and compute the Jaccard index of overlap.
+
+\subsection{Statistical Analysis}
+\label{sec:stats}
+
+We use the Mann-Whitney U test for comparing activation similarities between groups, as the distributions are non-normal.
+We report Cohen's $d$ for effect sizes.
+For the layer-by-layer analysis, we apply individual significance tests at each layer with $\alpha = 0.05$.
+All experiments use a fixed random seed (42) for reproducibility.

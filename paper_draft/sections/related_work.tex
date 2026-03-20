@@ -1,0 +1,28 @@
+\section{Related Work}
+\label{sec:related}
+
+\para{Superposition and polysemanticity.}
+Neural networks store more features than they have dimensions by exploiting sparsity, a phenomenon known as superposition \citep{elhage2022superposition}.
+\citet{elhage2022superposition} show that features in superposition organize into geometric structures (regular polytopes) in weight space, with the off-diagonal entries of $\mW^\top\mW$ encoding ``hallucinated correlations'' between distinct features.
+\citet{scherlis2022polysemanticity} formalize how capacity constraints drive polysemanticity: features become polysemantic only when multiple features simultaneously compete for the same representational capacity.
+Recent work on dictionary learning attempts to decompose polysemantic neurons into monosemantic features \citep{bricken2023monosemanticity}, but the \emph{structure} of the superposition---which concepts get compressed together and why---remains largely unexplored.
+Unlike these works, which focus on characterizing superposition as a phenomenon, we investigate the specific cross-domain concept pairings that superposition creates and whether these pairings are systematically meaningful.
+
+\para{Representation convergence.}
+\citet{huh2024platonic} show that different neural networks---across architectures, objectives, and even modalities---converge toward a shared statistical model of reality characterized by the pointwise mutual information kernel.
+Critically, this alignment is \emph{local} (neighborhood-level), constituting a partial isomorphism rather than a global bijection.
+\citet{moschella2022relative} demonstrate that independently trained models can communicate through relative representations (cosine similarities to anchor points), and \citet{ainsworth2022gitrebasin} show that different trained models converge to the same loss basin up to permutation of neurons.
+These results establish that partial structure-preserving maps between representations are ubiquitous, but they study alignment \emph{between} models rather than \emph{within} a single model's concept space.
+We complement this line of work by examining cross-domain concept mappings within a model's internal representations.
+
+\para{Mechanistic interpretability.}
+Linear probing has revealed that high-level concepts emerge as linearly separable directions in LLM activation spaces \citep{zou2023representation}.
+\citet{gurnee2023finding} use sparse probes on Pythia models to show that early layers employ more superposition while middle layers develop dedicated neurons for contextual features.
+\citet{nanda2023emergent} discover that OthelloGPT encodes board state using a MINE/YOURS frame rather than the absolute BLACK/WHITE encoding humans would expect---a concrete example of an unexpected partial isomorphism.
+\citet{chughtai2023universality} show that networks trained on group composition all implement the same algorithmic family but select different subsets of irreducible representations, each constituting a partial isomorphism of the algebraic structure.
+Our work extends these findings by systematically searching for unexpected concept pairings across diverse semantic domains, rather than studying individual cases.
+
+\para{Analogical reasoning in AI.}
+Analogical reasoning has deep roots in cognitive science \citep{gentner1983structure, hofstadter2001analogy}.
+Word embedding spaces capture certain analogical relationships \citep{mikolov2013word2vec}, but these tend to reflect well-known human analogies (king:queen::man:woman).
+We focus instead on analogies that are \emph{not} well-known to humans---mappings that models discover through compression but that may be genuinely novel and useful.

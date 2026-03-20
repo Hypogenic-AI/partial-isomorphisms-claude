@@ -1,0 +1,10 @@
+{
+  "n_samples": 100000,
+  "n_features": 5,
+  "hidden_dims": [
+    2
+  ],
+  "sparsity": 0.99,
+  "importance_decay": 0.7,
+  "description": "5 features, 2D hidden space, sparsity=0.99. Directly matches the running example in the TMS paper."
+}

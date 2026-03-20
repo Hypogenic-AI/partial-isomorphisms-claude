@@ -1,0 +1,7 @@
+{
+  "name": "dihedral_10",
+  "order": 20,
+  "n_triples": 400,
+  "table_file": "dihedral_10_table.npy",
+  "triples_file": "dihedral_10_triples.npy"
+}

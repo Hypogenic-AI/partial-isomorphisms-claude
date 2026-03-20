@@ -1,0 +1,7 @@
+{
+  "name": "cyclic_13",
+  "order": 13,
+  "n_triples": 169,
+  "table_file": "cyclic_13_table.npy",
+  "triples_file": "cyclic_13_triples.npy"
+}

@@ -1,0 +1,873 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .claude/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Unexpected Partial Isomorphisms: How LLMs Discover Counterintuitive Conceptual Mappings
+
+## 1. Executive Summary
+
+**Research question**: Do LLMs internally use counterintuitive partial isomorphisms—mappings between concept domains that humans wouldn&#39;t naturally make—because compressing concepts together helps efficient reasoning?
+
+**Key finding**: Yes. We found strong evidence across three experiments that LLMs create and leverage unexpected conceptual mappings. Embedding analysis identified 162 significantly surprising cross-domain concept pairs (out of 6,600 tested). These pairs show significantly higher activation overlap in Pythia-410M (Cohen&#39;s d = 0.81, p = 0.013), with the effect concentrated in semantic processing layers 5-17. When used as reasoning hints, these unexpected analogies improved GPT-4.1&#39;s insight quality (3.62/5) compared to conventional analogies (3.38/5) and no hints (3.00/5).
+
+**Practical implications**: LLMs have discovered a rich space of structural analogies between domains that humans don&#39;t commonly use. These &#34;alien analogies&#34; can serve as novel reasoning tools, suggesting that studying model-internal concept organization could yield genuinely new metaphors for human use.
+
+## 2. Goal
+
+### Hypothesis
+Machine learning models internally use counterintuitive partial isomorphisms—mappings between concepts not commonly used by humans—because compressing two concepts together helps the model reason more efficiently.
+
+### Why This Matters
+Humans reason through analogy constantly: calling sensors a &#34;hat,&#34; describing organizations with body metaphors (&#34;head,&#34; &#34;hands,&#34; &#34;heart&#34;). These partial isomorphisms preserve structural relationships across domains. LLMs, trained through massive text compression, may discover their own set of useful mappings that differ from human conventions. Understanding these mappings could:
+1. Reveal novel reasoning strategies that models employ
+2. Suggest new analogies useful for human understanding
+3. Deepen our understanding of how neural compression creates emergent conceptual structure
+
+### Gap in Existing Work
+The superposition literature (Elhage et al., 2022; Scherlis et al., 2022) establishes that models compress concepts together. The OthelloGPT work (Nanda et al., 2023) provides a striking example (MINE/YOURS vs. BLACK/WHITE encoding). However, no prior work has:
+- Systematically catalogued which unexpected concept pairings LLMs create
+- Measured how &#34;surprising&#34; these pairings are relative to human intuition
+- Tested whether these pairings confer reasoning advantages
+
+## 3. Data Construction
+
+### Dataset Description
+We constructed a concept dataset of **120 concepts** organized into **12 domains**:
+
+| Domain | Example Concepts |
+|--------|-----------------|
+| Body | head, heart, hand, eye, spine, lung, skin, bone, brain, blood |
+| Architecture | foundation, pillar, wall, roof, window, door, beam, floor, ceiling, arch |
+| Computing | memory, thread, cache, kernel, port, shell, stack, pipe, bus, bridge |
+| Cooking | recipe, ingredient, simmer, blend, season, crust, layer, garnish, marinate, reduce |
+| Music | harmony, rhythm, note, chord, tempo, pitch, tone, beat, melody, scale |
+| Warfare | strategy, siege, flank, shield, retreat, advance, ambush, fortify, rally, scout |
+| Biology | cell, membrane, nucleus, enzyme, gene, protein, tissue, organ, parasite, symbiosis |
+| Geography | basin, ridge, delta, plateau, canyon, tributary, watershed, erosion, sediment, estuary |
+| Finance | portfolio, hedge, leverage, yield, dividend, margin, bond, equity, liquidity, inflation |
+| Sports | offense, defense, coach, draft, penalty, assist, formation, endurance, sprint, tackle |
+| Social | hierarchy, network, trust, reputation, alliance, conflict, negotiation, consensus, influence, role |
+| Navigation | compass, chart, anchor, drift, bearing, course, harbor, current, tide, rudder |
+
+### Similarity Measures
+- **Model similarity**: Cosine similarity of OpenAI `text-embedding-3-large` embeddings (3,072 dimensions)
+- **Human similarity**: WordNet path similarity (Wu-Palmer measure via NLTK)
+- **Surprise score**: model_similarity − human_similarity (higher = more unexpected)
+
+### Data Quality
+- 7,140 total pairs had valid WordNet path similarity scores
+- 6,600 cross-domain pairs analyzed
+- 540 within-domain pairs used as calibration
+
+## 4. Experiment Description
+
+### Experiment 1: Embedding Surprise Discovery
+
+**Methodology**: Computed pairwise similarities between all 120 concepts using both LLM embeddings and WordNet. The &#34;surprise score&#34; quantifies the gap between what the model considers similar and what humans consider similar.
+
+**Tools**: OpenAI text-embedding-3-large API, NLTK WordNet
+
+### Experiment 2: LLM Analogical Reasoning Probing
+
+Three sub-experiments:
+- **2A**: Asked GPT-4.1 to find structural analogies for the top surprising pairs and rate their strength (1-5)
+- **2B**: Tested whether providing unexpected analogies as reasoning hints improves insight quality on 8 reasoning tasks, compared to conventional hints and no hints
+- **2C**: Asked GPT-4.1 to spontaneously generate its most surprising analogies
+
+**Tools**: OpenAI GPT-4.1 API (temperature=0.3 for generation, 0 for ratings)
+
+### Experiment 3: Activation-Level Analysis
+
+**Methodology**: Used TransformerLens to extract MLP activations from Pythia-410M for concept words across 5 sentence contexts. Compared activation cosine similarity between surprising pairs vs. control pairs (matched for cross-domain status but with near-zero surprise scores).
+
+**Tools**: TransformerLens, Pythia-410M (24 layers, 1024d), PyTorch with CUDA
+
+### Hyperparameters
+
+| Parameter | Value | Selection Method |
+|-----------|-------|------------------|
+| Embedding model | text-embedding-3-large | State-of-the-art (2025) |
+| LLM for reasoning | GPT-4.1 | State-of-the-art (2025) |
+| Activation model | Pythia-410M | Common interpretability target |
+| N contexts per concept | 5 | Balance of signal vs. cost |
+| Temperature (generation) | 0.3 | Low variance for comparison |
+| Temperature (rating) | 0.0 | Deterministic evaluation |
+| Significance threshold | 2σ above mean | Standard |
+| Statistical test | Mann-Whitney U | Non-parametric, appropriate for small samples |
+| Random seed | 42 | Reproducibility |
+
+### Reproducibility
+- All experiments run with fixed random seeds (42)
+- Hardware: 4× NVIDIA RTX A6000 (49GB each), only GPU 0 used for Pythia
+- Python 3.12.8, PyTorch 2.10.0+cu128, TransformerLens latest
+- All API calls cached in results/ directory
+- Total API cost: ~$5 (embedding + GPT-4.1 calls)
+
+## 5. Result Analysis
+
+### Key Findings
+
+#### Finding 1: LLM Embeddings Contain Abundant Unexpected Concept Pairings
+
+Out of 6,600 cross-domain concept pairs, **162 pairs** (2.5%) had surprise scores exceeding 2σ above the mean. The distribution shows a clear right tail of unexpectedly similar pairs.
+
+**Top 10 most surprising cross-domain pairs:**
+
+| Rank | Concept 1 | Domain 1 | Concept 2 | Domain 2 | Model Sim | Human Sim | Surprise |
+|------|-----------|----------|-----------|----------|-----------|-----------|----------|
+| 1 | bridge | computing | ridge | geography | 0.584 | 0.143 | 0.442 |
+| 2 | foundation | architecture | formation | sports | 0.595 | 0.167 | 0.428 |
+| 3 | ingredient | cooking | enzyme | biology | 0.520 | 0.111 | 0.409 |
+| 4 | ingredient | cooking | protein | biology | 0.506 | 0.100 | 0.406 |
+| 5 | foundation | architecture | anchor | navigation | 0.503 | 0.100 | 0.403 |
+| 6 | advance | warfare | assist | sports | 0.517 | 0.125 | 0.392 |
+| 7 | stack | computing | layer | cooking | 0.499 | 0.111 | 0.388 |
+| 8 | shield | warfare | defense | sports | 0.456 | 0.071 | 0.385 |
+| 9 | beam | architecture | bearing | navigation | 0.509 | 0.125 | 0.384 |
+| 10 | yield | finance | bearing | navigation | 0.468 | 0.091 | 0.377 |
+
+**Qualitative categorization of surprising pairs:**
+- **Functional equivalents**: foundation↔anchor (both provide stability), shield↔defense (both protect), recipe↔strategy (both are action plans)
+- **Structural parallels**: stack↔layer (both involve ordered accumulation), bridge↔ridge (both connect elevated points across a gap)
+- **Process analogues**: ingredient↔enzyme (both are inputs to a transformation), advance↔assist (both are enabling actions in collaborative contexts)
+- **Metaphorical resonance**: heart↔beat, eye↔window, head↔roof (these exist as human metaphors but have surprisingly high model similarity relative to WordNet)
+
+#### Finding 2: GPT-4.1 Recognizes and Leverages Unexpected Analogies
+
+**2A - Analogy Recognition**: GPT-4.1 rated the structural validity of surprising pairs at 3.05/5 on average, essentially equal to control pairs (3.00/5). This suggests the model finds these unexpected pairings as structurally valid as typical cross-domain pairs—the &#34;surprise&#34; is about human expectations, not structural emptiness.
+
+Notably, several pairs received ratings of 4/5: foundation↔formation, foundation↔anchor, stack↔layer, shield↔defense, ingredient↔note, heart↔beat, beam↔beat. These represent genuine structural analogies the model validates.
+
+**2B - Reasoning Transfer**: Unexpected analogy hints consistently improved reasoning quality:
+
+| Condition | Mean Rating | Std |
+|-----------|-------------|-----|
+| No hint | 3.00 | 0.76 |
+| Conventional hint | 3.38 | 0.92 |
+| **Unexpected hint** | **3.62** | **0.74** |
+
+The unexpected analogy hint outperformed both baselines on 5 of 8 tasks, tied on 2, and underperformed on 1. The largest improvements came on tasks about team dynamics (heart↔beat: 2→4) and catalytic processes (ingredient↔enzyme: 2→4).
+
+**2C - Spontaneous Discovery**: When asked to freely generate surprising analogies, GPT-4.1 produced remarkable mappings including:
+- **Chord progressions ↔ Market corrections**: Both build and resolve tension cyclically (surprise rating: 5/5)
+- **Git version control ↔ Phylogenetic trees**: Both are DAGs tracking changes and ancestry (surprise: 5/5)
+- **Dead reckoning ↔ Social reputation tracking**: Both estimate position from incomplete trajectory data (surprise: 5/5)
+- **Protein folding ↔ Origami algorithms**: Linear sequences folding into 3D structures via local rules (surprise: 4/5)
+
+#### Finding 3: Surprising Pairs Share More Neural Activation Patterns
+
+This is the strongest result. In Pythia-410M MLP activations:
+
+| Pair Type | Mean Activation Similarity | Std |
+|-----------|---------------------------|-----|
+| Surprising (n=20) | **0.510** | 0.057 |
+| Control (n=20) | 0.466 | 0.053 |
+| Random (n=20) | 0.443 | 0.060 |
+
+**Statistical tests:**
+- Surprising vs. Control: Mann-Whitney U = 283, **p = 0.013**, Cohen&#39;s d = **0.81** (large effect)
+- Surprising vs. Random: U = 313, **p = 0.001**
+
+**Layer-by-layer analysis** reveals the effect is concentrated in **layers 5-17** (middle layers responsible for semantic processing), with 14 out of 24 layers showing significant differences (p &lt; 0.05). Early layers (1-4) and the final layers (21-23) show no significant difference, consistent with these layers handling low-level token processing and output formatting respectively.
+
+**Polysemantic neurons**: We found 30 layer-pair combinations where concepts from surprising pairs shared top-5% activated neurons. The highest overlap was bridge↔ridge at layer 12 (Jaccard = 0.231, meaning 23% of their most active neurons are shared).
+
+### Hypothesis Testing Results
+
+| Hypothesis | Result | Evidence |
+|-----------|--------|----------|
+| H1: Embedding spaces contain unexpected concept pairings | **Supported** | 162 significantly surprising pairs (&gt;2σ), clear right-tail distribution |
+| H2: Unexpected analogies help reasoning | **Partially supported** | Unexpected hints score 3.62 vs 3.00 (no hint), but small sample (n=8 tasks) |
+| H3: Surprising pairs share activation patterns | **Strongly supported** | p=0.013, d=0.81, effect concentrated in semantic layers |
+
+### Surprises and Insights
+
+1. **The model finds surprising analogies as structurally valid as conventional ones** (2A ratings: 3.05 vs 3.00). The &#34;surprise&#34; is entirely about human expectations, not about structural emptiness of the mapping.
+
+2. **The activation effect is layer-specific**: The concentration in middle layers (5-17) aligns perfectly with prior work showing these layers encode semantic features (Gurnee et al., 2023). This suggests the partial isomorphisms are genuinely semantic, not artifacts of surface-level token processing.
+
+3. **Some &#34;surprising&#34; pairs are actually dormant metaphors**: heart↔beat, eye↔window, head↔roof exist as human metaphors but have much higher model similarity than WordNet would predict. The model has &#34;discovered&#34; these mappings independently from statistical patterns in text.
+
+4. **The most productive analogies involve functional roles**: foundation↔anchor, ingredient↔enzyme, shield↔defense. These map concepts that play similar *roles* in their respective domains, suggesting the model&#39;s compression strategy preserves functional structure preferentially.
+
+### Error Analysis
+
+- **WordNet limitations**: WordNet path similarity is a crude measure of human conceptual similarity. It assigns low scores to pairs that humans might actually find related (e.g., heart↔beat = 0.111). A more sophisticated human similarity baseline (e.g., crowd-sourced judgments) would provide a better comparison.
+- **Polysemy confound**: Some high-surprise pairs may reflect word polysemy rather than true cross-domain mapping. &#34;Bridge&#34; in computing already derives from the physical object; &#34;pitch&#34; spans music and sports. However, the activation analysis controls for this by using concepts in domain-specific sentence contexts.
+- **Self-evaluation bias in Exp 2**: Using GPT-4.1 to both generate and rate responses introduces bias. Ideally, ratings would come from human evaluators or a different model.
+
+### Limitations
+
+1. **Human similarity baseline**: WordNet path similarity is an imperfect proxy for human conceptual similarity. More robust baselines (ConceptNet, human ratings) would strengthen the surprise metric.
+2. **Small sample in Exp 2B**: Only 8 reasoning tasks were tested; statistical power is limited for the reasoning transfer experiment.
+3. **Model-specific findings**: Results from Pythia-410M may not generalize to larger or different architecture models. The embedding results use a different model (text-embedding-3-large) than the activation results (Pythia-410M), making cross-experiment comparison indirect.
+4. **Causal direction unclear**: We show correlation between embedding surprise and activation overlap, but cannot establish that the model *uses* these shared representations for reasoning (as opposed to them being an artifact of training data co-occurrence).
+5. **No causal intervention**: We did not perform activation steering/patching experiments to verify that the shared activations are functionally important.
+
+## 6. Conclusions
+
+### Summary
+LLMs create a rich landscape of unexpected partial isomorphisms between concepts from different domains. These mappings are not random: they preferentially preserve functional roles and structural relationships, they are concentrated in semantic processing layers, and they can serve as productive reasoning aids. The model has discovered &#34;alien analogies&#34;—structural parallels like ingredient↔enzyme, foundation↔anchor, and stack↔layer—that humans don&#39;t commonly use but which are genuinely insightful.
+
+### Implications
+- **For interpretability**: The partial isomorphisms we detect could serve as a window into how models organize knowledge. The finding that effects concentrate in layers 5-17 suggests a specific locus for studying cross-domain abstraction.
+- **For human reasoning**: The model-discovered analogies (e.g., chord progressions↔market corrections, Git↔phylogenetic trees) represent genuinely novel metaphors that could enrich human understanding.
+- **For AI alignment**: Understanding what concepts models &#34;see as similar&#34; reveals potential failure modes where models might inappropriately transfer reasoning from one domain to another.
+
+### Confidence in Findings
+- **High confidence** in Experiment 1 (embedding surprise): Large sample, clear statistical significance, well-calibrated methodology.
+- **High confidence** in Experiment 3 (activation analysis): Significant results with large effect size, layer-specific pattern consistent with prior work.
+- **Moderate confidence** in Experiment 2 (reasoning benefit): Consistent but small-sample results; self-evaluation introduces bias.
+
+## 7. Next Steps
+
+### Immediate Follow-ups
+1. **Causal verification**: Use activation patching to test whether the shared representations between surprising pairs are functionally important (following Nanda et al., 2023)
+2. **Human evaluation**: Replace WordNet with crowd-sourced similarity judgments; have humans rate the quality of model-discovered analogies
+3. **Scale analysis**: Repeat Experiment 3 across Pythia model sizes (70M to 6.9B) to test whether larger models create more or fewer unexpected partial isomorphisms
+
+### Alternative Approaches
+- Use Sparse Autoencoders (SAEs) to decompose polysemantic neurons and identify specific features shared between surprising pairs
+- Study how concept pairings change during training (grokking dynamics)
+- Cross-modal analysis: do vision-language models create different unexpected pairings than text-only models?
+
+### Open Questions
+1. Are the model&#39;s unexpected analogies genuinely novel, or do they reflect latent patterns in human language that WordNet misses?
+2. Do different model architectures (Transformers vs. SSMs) create different partial isomorphisms?
+3. Can we deliberately train models to discover useful analogies by incentivizing cross-domain transfer?
+4. Is there a &#34;grammar&#34; of partial isomorphisms—rules governing which structural properties get preserved across domains?
+
+## References
+
+1. Elhage et al. (2022). &#34;Toy Models of Superposition.&#34; arXiv:2209.10652
+2. Huh et al. (2024). &#34;The Platonic Representation Hypothesis.&#34; arXiv:2405.07987
+3. Scherlis et al. (2022). &#34;Polysemanticity and Capacity in Neural Networks.&#34; arXiv:2210.01892
+4. Nanda, Lee &amp; Wattenberg (2023). &#34;Emergent Linear Representations in World Models.&#34; arXiv:2309.00941
+5. Chughtai, Chan &amp; Nanda (2023). &#34;A Toy Model of Universality.&#34; arXiv:2302.03025
+6. Gurnee et al. (2023). &#34;Finding Neurons in a Haystack.&#34; arXiv:2305.01610
+7. Zou et al. (2023). &#34;Representation Engineering.&#34; arXiv:2310.01405
+
+## Appendix: Output File Locations
+
+| File | Description |
+|------|-------------|
+| `results/experiment1_results.json` | Full Experiment 1 results (all pair similarities and surprise scores) |
+| `results/experiment2_results.json` | Full Experiment 2 results (analogy generations, reasoning tasks, ratings) |
+| `results/experiment3_results.json` | Full Experiment 3 results (activation similarities, layer analysis, polysemantic neurons) |
+| `results/concept_embeddings.npy` | Raw embedding vectors for all 120 concepts |
+| `results/concept_list.json` | Concept list with domain labels |
+| `results/plots/experiment1_overview.png` | Experiment 1 visualizations |
+| `results/plots/experiment3_overview.png` | Experiment 3 visualizations |
+| `results/plots/final_overview.png` | Combined cross-experiment visualization |
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Plan: Unexpected Partial Isomorphisms
+
+## Motivation &amp; Novelty Assessment
+
+### Why This Research Matters
+Humans naturally create analogies to reason about complex systems—calling Waymo sensors a &#34;hat&#34; or describing organizational structure with body metaphors (&#34;head&#34;, &#34;hands&#34;, &#34;heart&#34;). These analogies are *partial isomorphisms*: structure-preserving maps between domains that hold for some properties but not all. LLMs, trained via compression of vast text, may discover their own partial isomorphisms that are counterintuitive to humans but computationally useful. Understanding these mappings would (a) reveal novel reasoning strategies models employ, (b) potentially suggest new analogies useful for human understanding, and (c) deepen our understanding of how neural compression creates emergent conceptual structure.
+
+### Gap in Existing Work
+The literature on superposition (Elhage et al., 2022), polysemanticity (Scherlis et al., 2022), and representation convergence (Huh et al., 2024) establishes that models compress concepts together. The OthelloGPT work (Nanda et al., 2023) provides a striking example of an unexpected encoding (MINE/YOURS vs. BLACK/WHITE). However, **no systematic study has catalogued which unexpected concept pairings LLMs create, measured how &#34;surprising&#34; these pairings are relative to human intuition, or tested whether these pairings confer reasoning advantages**. The gap is between knowing that superposition exists and understanding what specific counterintuitive analogies it creates.
+
+### Our Novel Contribution
+We conduct a three-pronged investigation:
+1. **Discovery**: Use embedding similarity analysis to find concept pairs that are close in LLM representation space but distant in human similarity judgments
+2. **Validation via LLM probing**: Use GPT-4.1 to explore whether models generate and leverage unexpected analogical mappings when reasoning
+3. **Mechanistic evidence**: Use TransformerLens on Pythia models to find shared activation patterns between semantically distant concepts
+
+### Experiment Justification
+- **Experiment 1** (Embedding Surprise): Needed to systematically discover candidate unexpected partial isomorphisms at scale, using quantitative comparison of model vs. human similarity
+- **Experiment 2** (LLM Analogical Reasoning): Needed to test the functional hypothesis—do these unexpected mappings actually help reasoning? This uses real LLM API calls.
+- **Experiment 3** (Activation Analysis): Needed to provide mechanistic evidence that the discovered mappings exist at the representation level, not just the behavioral level
+
+## Research Question
+Do LLMs internally use counterintuitive partial isomorphisms—mappings between concept domains that humans wouldn&#39;t naturally make—because compressing concepts together helps efficient reasoning?
+
+## Background and Motivation
+Analogical reasoning is fundamental to human cognition. We call sensors a &#34;hat,&#34; describe code with &#34;branches&#34; and &#34;trunks,&#34; and map organizational hierarchies to body parts. These partial isomorphisms preserve some structural relationships while ignoring others. LLMs, trained to predict text through massive compression, may discover their own set of useful partial isomorphisms that differ from human conventions. The superposition literature shows models routinely entangle features; the question is whether these entanglements form *meaningful* analogical structure.
+
+## Hypothesis Decomposition
+- **H1**: LLM embedding spaces contain concept pairs with high model-similarity but low human-similarity (unexpected proximity)
+- **H2**: When prompted to reason using these unexpected analogies, LLMs perform comparably or better than with conventional analogies
+- **H3**: At the activation level, semantically distant concepts that models treat as similar share activation patterns (polysemantic features)
+
+## Proposed Methodology
+
+### Approach
+Three complementary experiments, progressing from broad discovery to mechanistic evidence:
+
+### Experimental Steps
+
+**Experiment 1: Embedding Surprise Discovery**
+1. Curate ~200 concepts across 10+ domains (body, architecture, computing, cooking, music, warfare, biology, geography, finance, sports, etc.)
+2. Compute pairwise cosine similarities using a state-of-the-art embedding model (text-embedding-3-large)
+3. Compute human similarity scores using WordNet path similarity and ConceptNet relatedness
+4. Define &#34;surprise score&#34; = model_similarity - human_similarity (normalized)
+5. Identify top-50 most surprising pairs and categorize the structural relationships they share
+
+**Experiment 2: LLM Analogical Reasoning Probing**
+1. Take top surprising pairs from Exp 1
+2. Construct reasoning tasks where the analogy between concepts is relevant
+3. Test GPT-4.1 with: (a) no analogy hint, (b) conventional analogy hint, (c) unexpected analogy hint
+4. Measure reasoning quality via accuracy on structured questions
+5. Also: ask the model to freely generate analogies for concepts and measure how many are &#34;conventional&#34; vs. &#34;novel&#34;
+
+**Experiment 3: Activation Analysis**
+1. Use TransformerLens with Pythia-410M or Pythia-1.4B
+2. Feed sentences about concept pairs identified as &#34;surprising&#34; in Exp 1
+3. Extract MLP activations and compute cosine similarity between activation patterns
+4. Compare activation similarity for surprising vs. non-surprising pairs
+5. Identify specific neurons that activate for both concepts in a surprising pair
+
+### Baselines
+- Random concept pairs (null distribution for surprise scores)
+- Conventional analogy pairs (e.g., &#34;king:queen::man:woman&#34;) as positive controls
+- Human-rated similar pairs as calibration
+
+### Evaluation Metrics
+- **Surprise score**: (model_sim - human_sim), measuring unexpectedness
+- **Reasoning accuracy**: Performance on structured QA tasks with/without analogy hints
+- **Activation overlap**: Cosine similarity of MLP activation patterns for concept pairs
+- **Cohen&#39;s d**: Effect size for reasoning improvement from unexpected analogies
+
+### Statistical Analysis Plan
+- Wilcoxon signed-rank test for paired comparisons (non-normal distributions expected)
+- Bootstrap confidence intervals for surprise scores
+- Permutation tests for activation similarity significance
+- Bonferroni correction for multiple comparisons
+- α = 0.05
+
+## Expected Outcomes
+- **Supporting H1**: A distribution of surprise scores with a significant right tail (many unexpectedly similar pairs)
+- **Supporting H2**: Comparable or improved reasoning when using unexpected analogies vs. no analogy
+- **Supporting H3**: Higher activation overlap for model-surprising pairs than predicted by human similarity alone
+
+## Timeline and Milestones
+- Phase 1 (Planning): 20 min ✓
+- Phase 2 (Environment + Data): 15 min
+- Phase 3 (Implementation): 60 min
+- Phase 4 (Experiments): 90 min
+- Phase 5 (Analysis): 30 min
+- Phase 6 (Documentation): 20 min
+
+## Potential Challenges
+- Embedding similarity may not capture the kind of analogical structure we&#39;re looking for (mitigation: use multiple embedding models)
+- Human similarity baselines may be noisy (mitigation: use multiple sources—WordNet + ConceptNet)
+- Activation analysis on Pythia may not reveal clean patterns (mitigation: use multiple layers, aggregate)
+- API rate limits (mitigation: cache all responses, batch requests)
+
+## Success Criteria
+1. Identify ≥20 concept pairs with significantly elevated surprise scores
+2. Qualitative analysis shows these pairs share meaningful structural properties
+3. At least one experiment shows statistically significant evidence for the hypothesis
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: Unexpected Partial Isomorphisms in Neural Networks
+
+## Research Area Overview
+
+This review synthesizes literature on how neural networks internally represent and compress concepts, with focus on the hypothesis that models use **unexpected partial isomorphisms**—counterintuitive mappings between seemingly unrelated concepts—because compressing multiple concepts together enables more efficient reasoning.
+
+The research sits at the intersection of three active areas: (1) **superposition and polysemanticity** in neural representations, (2) **representation similarity and convergence** across models and modalities, and (3) **mechanistic interpretability** of learned algorithms. Together, these literatures provide strong evidence that neural networks routinely create partial structure-preserving maps between concepts that humans would not naturally associate.
+
+---
+
+## Key Papers
+
+### 1. Toy Models of Superposition
+- **Authors**: Elhage, Hume, Olsson, Schiefer, et al. (Anthropic)
+- **Year**: 2022
+- **Source**: arXiv:2209.10652 (Transformer Circuits Thread)
+- **Key Contribution**: First systematic study showing that neural networks store more features than they have dimensions by exploiting sparsity, creating geometric structures (regular polytopes) in weight space.
+- **Methodology**: Toy ReLU autoencoder x&#39; = ReLU(W^T W x + b) with synthetic sparse data. Features have geometric importance decay and controlled sparsity S.
+- **Key Findings**:
+  - Superposition emerges when features are sparse and a nonlinearity (ReLU) makes negative interference &#34;free&#34;
+  - First-order phase transitions between not-represented / dedicated-dimension / superposition states
+  - Features in uniform superposition organize into regular polytopes (digons, triangles, tetrahedra, pentagons, square antiprisms) corresponding to solutions of the Thomson problem
+  - &#34;Stickiness&#34; at rational dimensionality fractions (1/2, 2/3, 3/4) resembles the fractional quantum Hall effect
+  - Correlated features form local orthogonal bases; anti-correlated features prefer antipodal embedding
+  - At high sparsity, code-like structures (binary codes across neurons) emerge
+  - Gradient descent spontaneously discovers these geometric structures—they are *unexpected* in the sense that they arise from optimization, not design
+- **Datasets Used**: Purely synthetic sparse features
+- **Code Available**: Yes (Colab notebooks linked in paper)
+- **Relevance**: **Foundational**. The W^T W matrix encodes partial isomorphisms between features. Off-diagonal entries are &#34;hallucinated correlations&#34;—the model treats distinct features as partially equivalent. The polytope geometry shows these mappings have precise mathematical structure.
+
+### 2. The Platonic Representation Hypothesis
+- **Authors**: Huh, Cheung, Wang, Isola (MIT)
+- **Year**: 2024
+- **Source**: arXiv:2405.07987, ICML 2024
+- **Key Contribution**: Different neural networks (different architectures, objectives, modalities) converge toward a shared statistical model of reality—the &#34;platonic representation&#34;—characterized by the Pointwise Mutual Information (PMI) kernel.
+- **Methodology**: Measures alignment between 78 vision models and multiple LLMs using mutual k-nearest-neighbor (mNN) and CKNNA metrics on paired image-caption datasets.
+- **Key Findings**:
+  - Better models show higher mutual alignment; &#34;all strong models are alike&#34;
+  - Cross-modal (vision-language) alignment scales linearly with model quality
+  - LLM alignment to vision models predicts downstream language task performance
+  - Alignment is primarily **local** (neighborhood-level), not global—a partial isomorphism
+  - The PMI kernel K_PMI(x_a, x_b) = log P(x_a|x_b)/P(x_a) is preserved across modalities for bijective observation functions
+  - Color similarity structure recovered independently from pixel co-occurrences, language co-occurrences, and human perception are approximately the same
+- **Datasets Used**: VTAB (19 vision tasks), WIT (Wikipedia Image Text), DCI (Densely Captioned Images), CIFAR-10
+- **Code Available**: Not explicitly released
+- **Relevance**: **Critical**. Provides the theoretical framework for partial isomorphisms: representations from different models/modalities are isomorphic up to constant offsets, but only for shared information about underlying reality. The &#34;partiality&#34; is explained by modality-specific information loss.
+
+### 3. Polysemanticity and Capacity in Neural Networks
+- **Authors**: Scherlis, Sachan, Jermyn, Benton, Shlegeris (Redwood Research)
+- **Year**: 2022
+- **Source**: arXiv:2210.01892
+- **Key Contribution**: Formalizes how capacity constraints drive polysemanticity. Defines feature capacity C_i and shows polysemanticity is the globally optimal solution under capacity pressure with sparse inputs.
+- **Methodology**: Toy regression model y = Σ v_i x_i² with quadratic activations; analytical solutions for optimal capacity allocation.
+- **Key Findings**:
+  - Features are polysemantic (0 &lt; C_i &lt; 1) only when multiple features simultaneously hit the same marginal loss threshold—capacity is genuinely contested
+  - High kurtosis (k &gt; 3) enables superposition by down-weighting &#34;hallucinated correlations&#34;
+  - For k ≤ 3 (dense inputs), superposition never occurs; models jump directly from ignoring to fully representing features
+  - Efficient embedding matrices have block-semiorthogonal structure: within-block features interfere, cross-block features are orthogonal
+  - The Anthropic model produces many small blocks (regular polytopes); the Redwood model produces one large superposed block
+- **Datasets Used**: Purely synthetic
+- **Code Available**: No
+- **Relevance**: **High**. The &#34;hallucinated correlations&#34; mechanism is precisely the unexpected partial isomorphism: the model&#39;s output develops spurious statistical relationships between independent features because entangling them is the globally optimal loss-minimizing strategy.
+
+### 4. A Toy Model of Universality: Reverse Engineering How Networks Learn Group Operations
+- **Authors**: Chughtai, Chan, Nanda
+- **Year**: 2023
+- **Source**: arXiv:2302.03025, ICML 2023
+- **Key Contribution**: All networks trained on group composition implement the same algorithm family (GCR—Group Composition via Representation theory), but choose different subsets of irreducible representations.
+- **Methodology**: One-hidden-layer ReLU MLPs and Transformers trained on finite group multiplication tables (cyclic, dihedral, symmetric, alternating groups).
+- **Key Findings**:
+  - Networks embed group elements as representation matrices ρ(a) from mathematical representation theory
+  - The ReLU MLP layer multiplies these matrices; unembedding computes characters χ_ρ
+  - **Weak universality** holds: all networks share the GCR algorithmic skeleton but differ in which representation-theoretic subspaces are activated
+  - Different seeds learn different subsets of irreducible representations—each is a **partial isomorphism** preserving structure along certain representation-theoretic directions
+  - Training dynamics split into memorization, circuit formation, and cleanup (grokking) phases
+- **Datasets Used**: Synthetic group Cayley tables (all (a,b) pairs for groups up to |S6| = 720)
+- **Code Available**: Yes (referenced in paper)
+- **Relevance**: **High**. Directly demonstrates partial isomorphisms: the network implements a partial group homomorphism (preserving structure only along selected irreducible representations). Different models select different partial views, creating a family of partial isomorphisms to the same algebraic structure.
+
+### 5. Emergent Linear Representations in World Models of Self-Supervised Sequence Models
+- **Authors**: Nanda, Lee, Wattenberg
+- **Year**: 2023
+- **Source**: arXiv:2309.00941
+- **Key Contribution**: OthelloGPT encodes its world model linearly using a MINE/YOURS/EMPTY frame (relative to current player), not the absolute BLACK/WHITE/EMPTY that humans would use.
+- **Methodology**: Linear and nonlinear probes on OthelloGPT activations; causal interventions via vector addition.
+- **Key Findings**:
+  - Linear probes with MINE/YOURS/EMPTY achieve 99.5% accuracy vs. 74.4% for BLACK/WHITE/EMPTY
+  - The model&#39;s relational encoding is an **unexpected partial isomorphism**: it conflates &#34;my pieces&#34; regardless of color, which is functionally correct but counterintuitive
+  - Causal interventions confirm these directions are not correlational artifacts
+  - Multiple circuits exist for the same output—different computational paths appear isomorphic at the output level
+- **Datasets Used**: Synthetic Othello game sequences (3.5M training games)
+- **Code Available**: Yes (github.com/ajyl/mech_int_othelloGPT)
+- **Relevance**: **Very High**. A concrete example of an unexpected partial isomorphism: the model maps BLACK→MINE and WHITE→MINE depending on context, treating two distinct human categories as one internal concept. This is precisely the kind of counterintuitive mapping the research hypothesis predicts.
+
+### 6. Representation Engineering: A Top-Down Approach to AI Transparency
+- **Authors**: Zou, Phan, Chen, et al. (CAIS, CMU, Berkeley, Stanford)
+- **Year**: 2023
+- **Source**: arXiv:2310.01405
+- **Key Contribution**: Safety-relevant concepts (honesty, morality, power-seeking) emerge as linearly-separable directions in LLM activation spaces that can be read and written like dials.
+- **Methodology**: Linear Artificial Tomography (LAT): PCA on contrastive stimulus pairs to extract concept directions.
+- **Key Findings**:
+  - A single reading vector extracted from LLaMA-2 outperforms few-shot prompting on multiple QA benchmarks
+  - Concept directions generalize out-of-distribution to novel scenarios
+  - Directions are composable and can be used for control (steering model behavior)
+- **Datasets Used**: TruthfulQA, RACE, CommonsenseQA, ARC
+- **Code Available**: Yes (github.com/andyzoujm/representation-engineering)
+- **Relevance**: **Moderate**. Demonstrates that high-level concepts have linear structure in LLMs, which is a prerequisite for studying partial isomorphisms between concept directions.
+
+### 7. Finding Neurons in a Haystack: Case Studies with Sparse Probing
+- **Authors**: Gurnee, Nanda, Pauly, Harvey, Troitskii, Bertsimas
+- **Year**: 2023
+- **Source**: arXiv:2305.01610
+- **Key Contribution**: Systematic study using k-sparse probes showing that early layers use superposition (polysemantic neurons), middle layers have dedicated neurons for contextual features, and sparsity increases with scale.
+- **Methodology**: k-sparse linear classifiers on MLP activations of Pythia models (70M–6.9B params), probing for 100+ features across 10 categories.
+- **Key Findings**:
+  - First ~25% of MLP layers employ substantially more superposition than the rest
+  - Higher-level contextual features (e.g., is_python_code) get monosemantic neurons in middle layers
+  - Scale increases sparsity on average but with multiple dynamics: some features emerge, some split, some remain unchanged
+  - Polysemantic neurons activate for collections of seemingly unrelated n-grams
+- **Datasets Used**: The Pile (for activations), custom feature labels
+- **Code Available**: Referenced but not explicitly linked
+- **Relevance**: **High**. Provides empirical evidence for the spectrum of superposition in real LLMs—exactly the regime where unexpected partial isomorphisms operate.
+
+### 8. Git Re-Basin: Merging Models modulo Permutation Symmetries
+- **Authors**: Ainsworth, Hayase, Srinivasa
+- **Year**: 2022
+- **Source**: arXiv:2209.14764
+- **Key Contribution**: Different trained models converge to the same loss basin up to permutation of neurons, enabling model merging.
+- **Relevance**: **Moderate**. Shows that the permutation symmetry group acts on the space of learned representations, creating equivalence classes of solutions. This is a structural isomorphism at the weight level.
+
+### 9. Relative Representations Enable Zero-Shot Latent Space Communication
+- **Authors**: Moschella, Maiorca, Fumero, Norelli, Locatello, Rodolà
+- **Year**: 2022
+- **Source**: arXiv:2209.10535
+- **Key Contribution**: Different models trained independently on different data can communicate through their latent spaces using relative representations (cosine similarities to anchor points).
+- **Relevance**: **Moderate**. Demonstrates that the similarity structure (kernel) is shared across models—a partial isomorphism of the metric space, not just the linear space.
+
+---
+
+## Common Methodologies
+
+### Toy Model Analysis
+Used in: Elhage et al., Scherlis et al., Chughtai et al.
+- Small networks with controllable architecture on synthetic data
+- Allows ground-truth feature knowledge and analytical solutions
+- Primary tool for understanding *why* superposition/partial isomorphisms emerge
+
+### Linear Probing
+Used in: Nanda et al., Gurnee et al., Zou et al.
+- Train linear classifiers on internal activations to detect concept representations
+- k-sparse variants localize features to specific neurons
+- PCA on contrastive pairs extracts concept directions
+
+### Representation Similarity Analysis
+Used in: Huh et al., Moschella et al.
+- Measure alignment between model representation spaces
+- Metrics: CKA, mutual k-NN, CKNNA, Procrustes distance
+- Can be applied cross-model and cross-modality
+
+### Causal Intervention
+Used in: Nanda et al., Zou et al.
+- Add/subtract concept direction vectors from activations
+- Verify that detected directions causally affect model behavior
+- Distinguishes correlational from functional representations
+
+---
+
+## Standard Baselines
+
+- **Random/untrained model representations**: Lower bound for representation alignment
+- **PCA/linear dimensionality reduction**: Shows how much structure is linearly accessible
+- **Full (non-sparse) probes vs. sparse probes**: Tests whether features are in superposition or dedicated dimensions
+- **Monosemantic networks (with dictionary learning/SAEs)**: Attempts to extract individual features from superposition
+
+---
+
+## Evaluation Metrics
+
+- **Feature capacity** C_i: Fraction of a dimension allocated to feature i (Scherlis et al.)
+- **Probe accuracy at sparsity k**: How many neurons needed to detect a feature (Gurnee et al.)
+- **Mutual k-NN alignment**: Shared local neighborhood structure between representations (Huh et al.)
+- **CKA (Centered Kernel Alignment)**: Global representation similarity
+- **Causal intervention accuracy**: Whether adding/subtracting directions changes behavior correctly
+- **Reconstruction MSE**: For autoencoder-based superposition studies
+
+---
+
+## Datasets in the Literature
+
+- **Synthetic sparse features**: Used in Elhage et al., Scherlis et al. — controllable sparsity, importance, correlations
+- **Finite group Cayley tables**: Used in Chughtai et al. — cyclic, dihedral, symmetric groups
+- **Othello game sequences**: Used in Nanda et al. — synthetic board game data for studying world models
+- **The Pile / OpenWebText**: Used for LLM activation extraction in probing studies
+- **VTAB / WIT / CIFAR-10**: Used in Huh et al. for representation alignment measurement
+- **TruthfulQA / CommonsenseQA / ARC**: Used in Zou et al. for evaluating concept directions
+
+---
+
+## Gaps and Opportunities
+
+1. **No systematic study of *which* partial isomorphisms models create**: We know models compress features together, but there&#39;s no taxonomy of *which* unexpected concept pairings arise and whether they follow predictable patterns.
+
+2. **Limited connection between superposition geometry and model behavior**: The polytope structures found by Elhage et al. are beautiful mathematics, but their functional consequences for downstream tasks remain unclear.
+
+3. **Scaling laws for partial isomorphisms**: How do the specific concept mappings change with model scale? Gurnee et al. show sparsity increases, but the *structure* of the remaining superposition is unstudied.
+
+4. **Cross-task transfer of superposed representations**: If model A superimposes concepts X and Y (creating a partial isomorphism), does this help or hurt when the model encounters tasks requiring *both* X and Y?
+
+5. **Quantifying &#34;unexpectedness&#34;**: No formal metric exists for how surprising a particular concept pairing is. A framework combining human concept similarity judgments with model-internal similarity could fill this gap.
+
+6. **Bridge between toy models and real LLMs**: Most theoretical understanding comes from toy models; validating these insights in full-scale models remains challenging.
+
+---
+
+## Recommendations for Our Experiment
+
+### Recommended Datasets
+1. **Synthetic sparse feature datasets** (primary): Following Elhage et al., generate features with controlled sparsity, importance, and correlation structure. This allows ground-truth analysis of which partial isomorphisms the model creates.
+2. **Finite group operation datasets**: Following Chughtai et al., study which representation-theoretic partial isomorphisms emerge across different groups and architectures.
+3. **Othello game sequences**: Use OthelloGPT as a testbed for studying unexpected encodings (MINE/YOURS vs. BLACK/WHITE) in a model with known ground truth.
+
+### Recommended Baselines
+1. **Toy autoencoder** (Elhage et al. architecture): ReLU(W^T W x + b) with varying feature-to-dimension ratios
+2. **Sparse autoencoders (SAEs)**: Train on real LLM activations to extract features and study which concepts get superimposed
+3. **Linear probes at varying sparsity k**: Measure the spectrum of superposition in real models
+
+### Recommended Metrics
+1. **Feature capacity C_i and off-diagonal interference** (W_i · W_j)²: Direct measure of partial isomorphism strength
+2. **Cosine similarity between feature directions**: Which concept pairs share representational space?
+3. **Partial isomorphism score**: Procrustes-aligned similarity restricted to concept subsets
+4. **Human-judged concept similarity vs. model-internal similarity**: Measures &#34;unexpectedness&#34; of concept pairings
+
+### Methodological Considerations
+- Start with toy models where ground truth is known before scaling to real models
+- Use causal interventions to verify that detected partial isomorphisms are functional, not artifacts
+- Compare partial isomorphisms across multiple random seeds to distinguish systematic from accidental pairings
+- Control for sparsity: many apparent concept pairings may simply reflect co-occurrence in training data
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Ari Holtzman and NeuriCo
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Ari Holtzman and NeuriCo}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .claude/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

@@ -1,0 +1,26 @@
+\section{Introduction}
+\label{sec:intro}
+
+Humans reason through analogy constantly.
+We call sensors a ``hat,'' describe organizational structure with body metaphors (``head,'' ``hands,'' ``heart''), and map code repositories to trees with ``branches'' and ``trunks'' \citep{lakoff1980metaphors, hofstadter2001analogy}.
+These analogies are \emph{partial isomorphisms}: structure-preserving maps between domains that hold for some properties but not all \citep{gentner1983structure}.
+Large language models, trained to predict text through compression of vast corpora, face the same pressure to find useful abstractions across domains---but they are not constrained to discover the same mappings that humans use.
+
+{\bf Do LLMs discover their own, counterintuitive partial isomorphisms?}
+The superposition literature establishes that neural networks routinely compress more features than they have dimensions, entangling representations of distinct concepts \citep{elhage2022superposition, scherlis2022polysemanticity}.
+The OthelloGPT work provides a striking example: the model encodes board state as MINE/YOURS rather than BLACK/WHITE, conflating two human categories into one internal concept \citep{nanda2023emergent}.
+However, no prior work has systematically catalogued which unexpected concept pairings LLMs create, measured how surprising these pairings are relative to human intuition, or tested whether they confer reasoning advantages.
+
+We address this gap with a three-pronged investigation.
+We define a \emph{surprise score} that quantifies the discrepancy between LLM embedding similarity and human conceptual similarity for concept pairs across 12 domains.
+Using this metric, we identify 162 significantly surprising cross-domain pairs out of 6,600 tested---pairs like \emph{ingredient}$\leftrightarrow$\emph{enzyme} (both inputs to a transformation), \emph{foundation}$\leftrightarrow$\emph{anchor} (both provide stability), and \emph{stack}$\leftrightarrow$\emph{layer} (both involve ordered accumulation).
+We then validate these mappings through two complementary lenses: behavioral probing shows that unexpected analogies improve \gptfour's reasoning quality by 20.7\% over no-hint baselines, and mechanistic analysis reveals that surprising pairs share significantly more MLP activation overlap in \pythia (Cohen's $d = 0.81$, $p = 0.013$), concentrated in semantic processing layers 5--17.
+
+Our contributions are:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item We propose the \surprisescore metric for systematically discovering unexpected conceptual mappings in LLM embedding spaces, identifying 162 significantly surprising cross-domain concept pairs.
+    \item We demonstrate that these unexpected analogies are not structurally empty: they improve reasoning quality when used as hints and are validated as structurally sound by \gptfour.
+    \item We provide mechanistic evidence that surprising concept pairs share activation patterns in \pythia, with effects concentrated in semantic processing layers, linking behavioral observations to internal representations.
+\end{itemize}
+
+We describe related work in \secref{sec:related}, our methodology in \secref{sec:method}, results in \secref{sec:results}, and discuss implications and limitations in \secref{sec:discussion}.
